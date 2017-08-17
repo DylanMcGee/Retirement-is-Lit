@@ -1,0 +1,298 @@
+<!DOCTYLE html>
+<html>
+    <head>
+        <title>Retirement is Lit
+        </title>
+        <link rel="stylesheet" type = 'text/css' href="libraries/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+        <link rel="stylesheet" type = 'text/css' href="css/app.css">
+    </head>
+    
+    <body>
+        <div id="banner">
+            <div id="containerLeft">
+                <h1><span class="glyphicon glyphicon-fire"></span>Retirement Calculator
+                </h1>
+            </div>
+            <div id="containerRight">
+                <h2>Your Future is Lit
+                </h2>
+            </div>
+        </div>
+        <div id='fullpage-form-background'>
+        <button id='continue-button'>Continue</button>
+        <div id="circle-navigation">
+                <span class="circle highlighted" id="circle-0"></span>
+                <span class="circle" id ="circle-1"></span>
+                <span class="circle" id ="circle-2"></span>
+                <span class="circle" id ="circle-3"></span>
+                <span class="circle" id ="circle-4"></span>
+                <span class="circle" id ="circle-5"></span>
+            </div>
+            <div class = "fullpage-form" id="form-page-0">
+                <h1>How much do you currently have saved?</h1>
+                <input id="startingSavings" placeholder="$">
+                <p class="warningText hidden">Your input was invalid - Please enter a number above</p>
+            </div>
+            <div class ="fullpage-form" id="form-page-1">
+                <h1>How much is your current Salary</h1>
+                <input id="startingSalary" placeholder="$">
+                <p class="warningText hidden">Your input was invalid - Please enter a number above</p>
+            </div>
+            <div class ="fullpage-form sliderForm" id="form-page-2">
+                <form>
+                    <h1>Years until Retirement: </h1>
+                    <output name = "yearsOutput">35 Years</output>
+                    <input name = "yearsInput" id="yearsToRetirement" type="range" class="sliderInput" value="35" min="1" max="50" oninput="yearsOutput.value = yearsInput.value + ' Years'">
+                </form>
+                <p class="sliderInputText">
+                    <span class="first">0</span>
+                    <span class="third">50</span>
+                </p>
+            </div>
+            <div class ="fullpage-form sliderForm" id="form-page-3">
+                <h1>Percent of Salary Saved: </h1>
+                <form>
+                    <output name = "salarySavedOutput">10%</output>
+                    <input name = "salarySavedInput" id="percentSavings" type="range" class="sliderInput" value="10" min="0" max="20" oninput="salarySavedOutput.value = salarySavedInput.value + '%'">
+                </form>
+                <p class="sliderInputText">
+                    <span class="first">0%</span>
+                    <span class="third">20%</span>
+                </p>
+            </div>
+            <div class ="fullpage-form sliderForm" id="form-page-4">
+                <h1>Expected salary increase per year: </h1>
+                <form>
+                    <output name = "salaryIncreaseOutput">5%</output>
+                    <input name = "salaryIncreaseInput" id = "percentSalaryGrowth" type="range" class="sliderInput" value="5" min="0" max="10" oninput="salaryIncreaseOutput.value = salaryIncreaseInput.value + '%'">
+                </form>
+                <p class="sliderInputText">
+                    <span class="first">0%</span>
+                    <span class="third">10%</span>
+                </p>
+            </div>
+            <div class ="fullpage-form" id="form-page-5">
+                <h1>Yearly Growth of Assets: </h1>
+                <form>
+                    <output name = "growthOutput">7%</output>
+                    <input name = "growthInput" id="assetGrowth" type="range" class="sliderInput" value="7" min="0" max="15" oninput="growthOutput.value = growthInput.value + '%'">
+                </form>
+                <p class="sliderInputText">
+                    <span class="first">0%</span>
+                    <span class="third">10%</span>
+                </p>
+            </div>
+            
+
+        </div>
+        
+        <div id="resultsBackground">
+        </div>
+        <div id="primaryResultsContainer">
+            <div class="row">
+                
+                <div class="col-lg-12"><h1>You will save : <span id="totalSavings"></span></h1></div>
+                
+            </div>
+            <div class="row">
+                <div class = "col-lg-12"><h2>That is $<span id="totalSavingsAdjusted"></span> adjusted for inflation</h2></div>
+            </div>
+            <div class = "row">
+                <div class = "col-lg-4"></div>
+                <div class = "col-lg-4"><button id="showDetailButton" class="btn btn-block"><span class="glyphicon glyphicon-chevron-down"></span> Show Details</button></div>
+            </div>
+        </div>
+        <div id = "detailedResultsContainer">
+            <div id="outputLegend">
+                <span class="startingYearAmount">Starting Balance</span> +
+                <span class="additionalSavings">Additional Savings</span>+
+                <span class="investmentEarnings">Investment Earnings</span> =
+                <span class="endingYearAmount">Year End Balance</span>
+                
+            </div>
+        </div>
+        
+    <script>
+        
+        var formPosition = 0;
+        var lastPageOfFormReached = false;
+        
+        
+        //I did not write this function.  I took it from stack overflow :: https://stackoverflow.com/questions/2254185/regular-expression-for-formatting-numbers-in-javascript
+        //This is the only piece of the project I did not write myself.
+        function commafyNumber(val){
+            return val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+        }
+        
+        function transitionFormAndNavigation(currentPosition, nextPosition){
+            var currentNavigationCircle = document.getElementById('circle-'+currentPosition);
+            var currentElement = document.getElementById('form-page-'+currentPosition);
+            currentElement.classList.remove('fade-in');
+            currentElement.classList.add('fade-out');
+            var nextNavigationCircle = document.getElementById('circle-'+nextPosition);
+            var nextElement = document.getElementById('form-page-'+nextPosition);
+
+            nextElement.classList.add('fade-in');
+            nextElement.classList.remove('fade-out');
+
+            currentNavigationCircle.classList.remove('highlighted');
+            nextNavigationCircle.classList.add('highlighted');
+            
+            var inputs = document.getElementsByTagName('input');
+            setTimeout( function selectNextInput(){
+                inputs[nextPosition].focus();
+            }, 600);
+            
+            
+            if(nextPosition === 5){
+                    lastPageOfFormReached = true;
+                    document.getElementById('continue-button').classList.add('submitButton');
+                    document.getElementById('continue-button').innerHTML = '<span class="glyphicon glyphicon-fire"></span> Submit'
+                }
+            else{
+                
+            }
+        }
+        
+        var firstElement = document.getElementById('form-page-0');
+        firstElement.classList.add('fade-in');
+        document.getElementsByTagName('input')[0].focus();
+        
+  
+
+
+
+        document.getElementById('continue-button').addEventListener('click', function(){
+            /*If user hasn't reached last page of form, we simply want to progress form.
+             *When user reaches last page of form, we change the continue button to a submit button
+             *When submit button is hit, we need to verify that valid numbers were entered.
+                *if valid form is submitted, clear away the form and start the results page
+                *if valid form is not submitted, take user back to page with incorrect info.  Display error.
+            */
+            if(!lastPageOfFormReached){    
+                transitionFormAndNavigation(formPosition, formPosition+1);
+                formPosition++;
+            }
+            else{
+                if(isNaN(parseInt(document.getElementById('startingSavings').value))){
+                    console.log('here');
+                    transitionFormAndNavigation(formPosition, 0);
+                    document.getElementsByClassName('warningText')[0].classList.remove('hidden');
+                    formPosition = 0;
+                }else if(isNaN(parseInt(document.getElementById('startingSalary').value))){
+                    console.log('here');
+                    transitionFormAndNavigation(formPosition, 1);
+                    document.getElementsByClassName('warningText')[1].classList.remove('hidden');
+                    formPosition = 1;
+                }else{
+                    createResultsBackground();
+                    createResultsContent(parseInt(document.getElementById('startingSavings').value) , parseInt(document.getElementById('startingSalary').value) , parseInt(document.getElementById('yearsToRetirement').value) , parseFloat(document.getElementById('percentSavings').value)/100 , parseFloat(document.getElementById('percentSalaryGrowth').value)/100 , parseFloat(document.getElementById('assetGrowth').value)/100);
+                }
+            }
+            /*    if(formPosition === 5){
+                    lastPageOfFormReached = true;
+                    document.getElementById('continue-button').classList.add('submitButton');
+                    document.getElementById('continue-button').innerHTML = '<span class="glyphicon glyphicon-fire"></span> Submit'
+                }
+                
+            }
+            else{
+                createResultsBackground();
+                // function createResultsContent(startingSavings, startingSalary, yearsToRetirement, percentSavings, salaryGrowth, assetGrowth)
+                createResultsContent(parseInt(document.getElementById('startingSavings').value) , parseInt(document.getElementById('startingSalary').value) , parseInt(document.getElementById('yearsToRetirement').value) , parseFloat(document.getElementById('percentSavings').value)/100 , parseFloat(document.getElementById('percentSalaryGrowth').value)/100 , parseFloat(document.getElementById('assetGrowth').value)/100);
+            } */
+        });
+        
+        { //Adds event listeners to each circle element -- this allows navigation other than by continue button
+            var circleElements = document.getElementsByClassName('circle');
+        
+            for(let i=0; i<circleElements.length; i++){
+                circleElements[i].addEventListener('click', function(){
+                    transitionFormAndNavigation(formPosition, i);
+                    formPosition=i;
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', showButtonActiveStyle, false);
+        document.addEventListener('keyup', fireSubmitButton, false);
+        
+        function showButtonActiveStyle(e){
+            if (e.keyCode === 13){
+                document.getElementById('continue-button').classList.add('activeFromKeyboard');
+            }
+        }
+        
+        function fireSubmitButton(e){
+            if(e.keyCode === 13){
+                document.getElementById('continue-button').classList.remove('activeFromKeyboard');
+                document.getElementById('continue-button').click();
+            }
+        }
+        
+        
+        
+        
+        
+        //DATA BELOW IS FOR THE RESULTS PAGE OF FORM SUBMITTAL
+        function createResultsBackground(){
+            document.getElementById('fullpage-form-background').classList.add('hidden-background');
+            
+            var elem = document.getElementById('fullpage-form-background');
+            setTimeout( function deleteOldForm (){
+                elem.parentNode.removeChild(elem);
+            }, 3100);
+        }
+        //createResultsBackground();
+        
+        function createResultsContent(startingSavings, startingSalary, yearsToRetirement, percentSavings, salaryGrowth, assetGrowth){
+            var runningSavings = startingSavings;
+            var runningSalary = startingSalary;
+            var runningInflation = 1;
+            
+            for(let i = 0; i<yearsToRetirement; i++){
+                
+                var newDiv = document.createElement('div');
+                var strHTML = ""; //innerHTML automatically closes tags.  Thus, it is safer to feed innerHTML a string once at the end of each loop
+                
+
+                
+                strHTML = "<span class='year'>" + (2017+i).toString() + ":</span> <span class= 'startingYearAmount'>" + runningSavings.toString() +"</span> + <span class='additionalSavings'> " + Math.floor(runningSalary*percentSavings).toString() + "</span> + <span class='investmentEarnings'> " + Math.floor(runningSavings *assetGrowth).toString() + "</span> = <span class='endingYearAmount'> ";
+
+                
+                console.log("******");
+                console.log(runningSavings);
+                console.log(runningSalary*percentSavings);
+                console.log(runningSavings*assetGrowth);
+                console.log(runningSavings + (runningSalary*percentSavings) + runningSavings*assetGrowth);
+                runningSavings = Math.floor( runningSavings + (runningSalary * percentSavings) + (runningSavings * assetGrowth) );
+                runningSalary = runningSalary * (1+salaryGrowth);
+                runningInflation *= 1.015
+                
+                strHTML += runningSavings.toString() + "</span>";
+                newDiv.innerHTML = strHTML;
+                
+                
+                
+                
+                
+                document.getElementById('detailedResultsContainer').appendChild(newDiv);
+            }
+            
+            //document.getElementById('totalSavings').innerHTML = '$' + runningSavings.toString();
+            document.getElementById('totalSavings').innerHTML = '$' + commafyNumber(runningSavings.toString());
+           
+            document.getElementById('totalSavingsAdjusted').innerHTML = commafyNumber(Math.floor(runningSavings/runningInflation).toString());
+            
+        }
+        //createResultsBackground();
+        //createResultsContent(25000, 43000, 35, .10, .03, .07); 
+        
+        document.getElementById('showDetailButton').addEventListener('click', function(){
+           document.getElementById('detailedResultsContainer').classList.add('visible');
+        });
+        
+        
+    </script>
+    </body>
+</html>

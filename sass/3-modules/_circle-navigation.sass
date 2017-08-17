@@ -1,0 +1,35 @@
+#circle-navigation
+    position: fixed
+    min-width: 10%
+    margin-left: 92%
+    width: 5%
+    margin-top: 20%
+    display: block
+    z-index: 4
+
+
+    
+.circle
+    display: block
+    position: relative
+    border-radius: 100%
+    border: solid 2px white
+    background-color: tint(black, 40%)
+    width: 32px
+    height: 32px
+    z-index: 4
+    margin-top: 12px
+    transition: .5s
+.circle:hover
+    background-color: tint($blue, 70%)
+    
+.highlighted
+    border: solid 2px white
+    background-color: tint($blue, 50%)
+    width: 38px
+    height: 38px
+    left: -3px
+    
+.complete
+    background-color: black
+    
